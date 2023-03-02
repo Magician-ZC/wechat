@@ -20,13 +20,20 @@ class _PostEditPageState extends State<PostEditPage> {
   //是否将要删除
   bool isWillRemove = false;
 
+  //是否将要排序
+  bool isWillOrder = false;
+
+  //被拖拽到的target id
+  String targetAssId = "";
+
   //图片列表
   Widget _buildPhotosList() {
     return Padding(
       padding: const EdgeInsets.all(spacing),
       child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
-        final double width = (constraints.maxWidth - spacing * 2) / 3;
+        final double width =
+            (constraints.maxWidth - spacing * 2 - imagePadding * 2 * 3) / 3;
         return Wrap(
           spacing: spacing,
           runSpacing: spacing,
@@ -71,7 +78,7 @@ class _PostEditPageState extends State<PostEditPage> {
 
   //图片项
   Widget _buildPhotoItem(AssetEntity asset, double width) {
-    return Draggable(
+    return Draggable<AssetEntity>(
       //拖动的数据
       data: asset,
       //当拖动对象开始被拖动时调用
@@ -84,6 +91,7 @@ class _PostEditPageState extends State<PostEditPage> {
       onDragEnd: (details) {
         setState(() {
           isDragNow = false;
+          isWillOrder = false;
         });
       },
       //当draggable被放置在DragTarget接收时调用
@@ -92,6 +100,7 @@ class _PostEditPageState extends State<PostEditPage> {
       onDraggableCanceled: (velocity, offset) {
         setState(() {
           isDragNow = false;
+          isWillOrder = false;
         });
       },
       //拖动进行时显示在指针下放的小部件
@@ -119,25 +128,73 @@ class _PostEditPageState extends State<PostEditPage> {
           opacity: const AlwaysStoppedAnimation(0.2),
         ),
       ),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return GalleryWidget(
-                initialIndex: _selectedAssets.indexOf(asset),
-                items: _selectedAssets);
-          }));
+
+      child: DragTarget<AssetEntity>(
+        builder: (context, candidateData, rejectedData) {
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) {
+                return GalleryWidget(
+                    initialIndex: _selectedAssets.indexOf(asset),
+                    items: _selectedAssets);
+              }));
+            },
+            child: Container(
+              clipBehavior: Clip.antiAlias,
+              padding: (isWillOrder && targetAssId == asset.id)
+                  ? EdgeInsets.zero
+                  : const EdgeInsets.all(imagePadding),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(3),
+                border: (isWillOrder && targetAssId == asset.id)
+                    ? Border.all(color: accentColor, width: imagePadding)
+                    : null,
+              ),
+              child: AssetEntityImage(
+                asset,
+                isOriginal: false,
+                width: width,
+                height: width,
+                fit: BoxFit.cover,
+              ),
+            ),
+          );
         },
-        child: Container(
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(borderRadius: BorderRadius.circular(3)),
-          child: AssetEntityImage(
-            asset,
-            isOriginal: false,
-            width: width,
-            height: width,
-            fit: BoxFit.cover,
-          ),
-        ),
+        onWillAccept: (data) {
+          // 排除自己
+          if (data?.id == asset.id) {
+            return false;
+          }
+          setState(() {
+            isWillOrder = true;
+            targetAssId = asset.id;
+          });
+          return true;
+        },
+        onAccept: (data) {
+          // 0 当前元素位置
+          int targetIndex = _selectedAssets.indexWhere((element) {
+            return element.id == asset.id;
+          });
+
+          // 1 删除原来的
+          _selectedAssets.removeWhere((element) {
+            return element.id == data.id;
+          });
+
+          // 2 插入到目标前面
+          _selectedAssets.insert(targetIndex, data);
+          setState(() {
+            isWillOrder = false;
+            targetAssId = "";
+          });
+        },
+        onLeave: (data) {
+          setState(() {
+            isWillOrder = false;
+            targetAssId = "";
+          });
+        },
       ),
     );
   }
@@ -159,13 +216,13 @@ class _PostEditPageState extends State<PostEditPage> {
                 Icon(
                   Icons.delete,
                   size: 32,
-                  color: isWillRemove ? Colors.white:Colors.white70,
+                  color: isWillRemove ? Colors.white : Colors.white70,
                 ),
                 //文字
                 Text(
                   '拖拽到这里删除',
                   style: TextStyle(
-                    color: isWillRemove ? Colors.white:Colors.white70,
+                    color: isWillRemove ? Colors.white : Colors.white70,
                   ),
                 )
               ],
