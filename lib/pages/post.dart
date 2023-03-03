@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wechat/utils/config.dart';
+import 'package:wechat/utils/index.dart';
 import 'package:wechat/widgets/gallery.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
@@ -53,15 +54,29 @@ class _PostEditPageState extends State<PostEditPage> {
   Widget _buildAddBtn(BuildContext context, double width) {
     return GestureDetector(
       onTap: () async {
-        final List<AssetEntity>? result = await AssetPicker.pickAssets(context,
-            pickerConfig: AssetPickerConfig(
-                selectedAssets: _selectedAssets, maxAssets: maxAssets));
-        if (result == null) {
-          return;
-        }
-        setState(() {
-          _selectedAssets = result;
-        });
+        //相册
+       // var result = await DuPicker.assets(context: context);
+       //  if (result == null) {
+       //    return;
+       //  }
+       //  setState(() {
+       //    _selectedAssets = result;
+       //  });
+
+        //拍摄照片
+       // var result = await DuPicker.takePhoto(context);
+       // if (result == null) {
+       //   return;
+       // }
+       // setState(() {
+       //   _selectedAssets.add(result);
+       // });
+
+       //拍视频
+       var result = await DuPicker.takeVideo(context);
+       if (result == null) {
+         return;
+       }
       },
       child: Container(
         color: Colors.black12,

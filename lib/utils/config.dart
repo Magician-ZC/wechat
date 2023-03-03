@@ -12,3 +12,6 @@ const Color accentColor = Colors.blue;
 
 // 图片边框
 const double imagePadding = 2;
+
+// 视频录制最大时间 秒
+const double maxVideoDuration = 30;

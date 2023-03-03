@@ -28,10 +28,13 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  camerawesome: ^1.2.1
   cupertino_icons: ^1.0.2
   extended_image: ^7.0.2
   flutter:
     sdk: flutter
+  path_provider: ^2.0.13
+  uuid: ^3.0.7
   wechat_assets_picker: ^8.4.0
 
 dev_dependencies:
