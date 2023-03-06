@@ -1,6 +1,6 @@
 library widgets;
 
-export 'appbar.dart';
+export 'slide_appbar.dart';
 export 'gallery.dart';
 export 'camera/camera.dart';
 export 'player.dart';

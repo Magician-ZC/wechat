@@ -18,3 +18,6 @@ const Color accentColor = Colors.amberAccent;
 
 // 次文字颜色
 const Color secondaryTextColor = Colors.black45;
+
+// 页面 padding
+const double pagePadding = 12.0;

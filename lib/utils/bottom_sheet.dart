@@ -5,7 +5,7 @@ import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
 import '../widgets/index.dart';
 
-enum PickType {camera,asset}
+enum PickType { camera, asset }
 
 ///微信底部弹出
 class DuBottomSheet {
@@ -22,83 +22,80 @@ class DuBottomSheet {
   //相册，相机
   Widget _buildAssetCamera(BuildContext context) {
     return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          //拍摄
-          _buildBtn(Text('拍摄'),onTap: (){
-            DuPicker.showModalSheet(
-                context,
-                child: _buildMediaImageVideo(context,pickType: PickType.camera)
-            );
-          }),
-          const DividerWidget(),
-          //相册
-          _buildBtn(Text('相册'),onTap: (){
-            DuPicker.showModalSheet(
-              context,
-              child: _buildMediaImageVideo(context,pickType: PickType.asset)
-            );
-          }),
-          const DividerWidget(height: 6,),
-          //取消
-          _buildBtn(Text('取消'),onTap: (){
-            Navigator.pop(context);
-          }),
-
-        ],
-      );
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        //拍摄
+        _buildBtn(Text('拍摄'), onTap: () {
+          DuPicker.showModalSheet(context,
+              child: _buildMediaImageVideo(context, pickType: PickType.camera));
+        }),
+        const DividerWidget(),
+        //相册
+        _buildBtn(Text('相册'), onTap: () {
+          DuPicker.showModalSheet(context,
+              child: _buildMediaImageVideo(context, pickType: PickType.asset));
+        }),
+        const DividerWidget(
+          height: 6,
+        ),
+        //取消
+        _buildBtn(Text('取消'), onTap: () {
+          Navigator.pop(context);
+        }),
+      ],
+    );
   }
 
   //图片，视频
-  Widget _buildMediaImageVideo(BuildContext context,{PickType? pickType}) {
+  Widget _buildMediaImageVideo(BuildContext context, {PickType? pickType}) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         //图片
-        _buildBtn(const Text('图片'),onTap: () async {
+        _buildBtn(const Text('图片'), onTap: () async {
           List<AssetEntity>? result;
-          if(pickType == PickType.asset){
+          if (pickType == PickType.asset) {
             result = await DuPicker.assets(
-              context: context,
-              requestType: RequestType.image,
-              selectedAssets: selectAssets
-            );
-          }else if(pickType == PickType.camera){
+                context: context,
+                requestType: RequestType.image,
+                selectedAssets: selectAssets);
+          } else if (pickType == PickType.camera) {
             final asset = await DuPicker.takePhoto(context);
-            if(asset == null){
+            if (asset == null) {
               return;
             }
-            if(selectAssets == null){
+            if (selectAssets == null) {
               result = [asset];
-            }else{
-              result = [...selectAssets!,asset];
+            } else {
+              result = [...selectAssets!, asset];
             }
           }
-          _popRoute(context,result: result);
+          _popRoute(context, result: result);
         }),
         const DividerWidget(),
         //视频
-        _buildBtn(const Text('视频'),onTap: () async {
+        _buildBtn(const Text('视频'), onTap: () async {
           List<AssetEntity>? result;
-          if(pickType == PickType.asset){
+          if (pickType == PickType.asset) {
             result = await DuPicker.assets(
                 context: context,
                 requestType: RequestType.video,
                 selectedAssets: selectAssets,
-                maxAssets: 1
-            );
-          }else if(pickType == PickType.camera){
+                maxAssets: 1);
+          } else if (pickType == PickType.camera) {
             final asset = await DuPicker.takeVideo(context);
-            if(asset == null){
+            if (asset == null) {
               return;
             }
             result = [asset];
           }
-          _popRoute(context,result: result);
+          _popRoute(context, result: result);
         }),
-        const DividerWidget(height: 6,),
+        const DividerWidget(
+          height: 6,
+        ),
         //取消
-        _buildBtn(Text('取消'),onTap: (){
+        _buildBtn(Text('取消'), onTap: () {
           _popRoute(context);
         }),
       ],
@@ -106,20 +103,16 @@ class DuBottomSheet {
   }
 
   //返回
-  void _popRoute(BuildContext context,{result}){
+  void _popRoute(BuildContext context, {result}) {
     Navigator.pop(context);
-    Navigator.pop(context,result);
+    Navigator.pop(context, result);
   }
 
   ///按钮
-  InkWell _buildBtn(Widget child,{Function()? onTap}) {
+  InkWell _buildBtn(Widget child, {Function()? onTap}) {
     return InkWell(
-            onTap: onTap,
-            child: Container(
-                alignment: Alignment.center,
-                height: 40,
-                child: child
-            ),
-          );
+      onTap: onTap,
+      child: Container(alignment: Alignment.center, height: 40, child: child),
+    );
   }
 }

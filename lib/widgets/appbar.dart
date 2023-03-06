@@ -1,29 +1,29 @@
 import 'package:flutter/material.dart';
 
-class SlideAppBarWidget extends StatelessWidget implements PreferredSizeWidget {
-  const SlideAppBarWidget(
-      {super.key,
-      required this.child,
-      required this.controller,
-      required this.visible});
+///顶部导航栏
+class AppBarWidget extends StatelessWidget implements PreferredSizeWidget{
+  const AppBarWidget({Key? key, this.backgroundColor, this.elevation, this.leading,this.actions}) : super(key: key);
 
-  final PreferredSizeWidget child;
-  final AnimationController controller;
-  final bool visible;
+  final Color? backgroundColor;
+  final double? elevation;
+  final Widget? leading;
+  final List<Widget>? actions;
 
   @override
-  Size get preferredSize => child.preferredSize;
+  // TODO: implement preferredSize
+  Size get preferredSize => const Size.fromHeight(30);
+
+  Widget _mainView(){
+    return AppBar(
+      backgroundColor: backgroundColor ?? Colors.transparent,
+      elevation: elevation ?? 0,
+      leading: leading,
+      actions: actions,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    visible ? controller.reverse():controller.forward();
-    return SlideTransition(
-      position: Tween<Offset>(
-        begin: Offset.zero,
-        end: const Offset(0, -1),
-      ).animate(
-          CurvedAnimation(parent: controller, curve: Curves.fastOutSlowIn)),
-      child: child,
-    );
+    return _mainView();
   }
 }

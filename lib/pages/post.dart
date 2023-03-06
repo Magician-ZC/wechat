@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:wechat/utils/config.dart';
+import 'package:wechat/entity/index.dart';
 import 'package:wechat/utils/index.dart';
-import 'package:wechat/widgets/gallery.dart';
+import 'package:wechat/widgets/appbar.dart';
 import 'package:wechat/widgets/index.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
@@ -28,6 +28,12 @@ class _PostEditPageState extends State<PostEditPage> {
   // 视频压缩文件
   CompressMediaFile? _videoCompressFile;
 
+  //内容输入控制器
+  TextEditingController _contentController = TextEditingController();
+
+  //菜单列表
+  List<MenuItemModel> _menus = [];
+
   //已选中图片数组
   List<AssetEntity> _selectedAssets = [];
 
@@ -48,6 +54,66 @@ class _PostEditPageState extends State<PostEditPage> {
     super.initState();
     _postType = widget.postType;
     _selectedAssets = widget.selectedAssets ?? [];
+    _menus = [
+      MenuItemModel(icon:Icons.location_on_outlined, title:"所在位置"),
+      MenuItemModel(icon:Icons.alternate_email_outlined, title:"提醒谁看"),
+      MenuItemModel(icon:Icons.person_outline, title:"谁可以看",right: "公开")
+    ];
+  }
+
+
+  @override
+  void dispose() {
+    _contentController.dispose();
+    super.dispose();
+  }
+
+  //内容输出框
+  Widget _buildContentInput(){
+    return LimitedBox(
+      maxHeight: 180,
+      child: TextField(
+        maxLines: null,
+        maxLength: 20,
+        controller: _contentController,
+        decoration:InputDecoration(
+          hintText: "这一刻的想法...",
+          hintStyle: const TextStyle(
+            color: Colors.black26,
+            fontSize: 18,
+            fontWeight: FontWeight.w500
+          ),
+          border: InputBorder.none,
+          counterText: _contentController.text.isEmpty ? "":null,
+        ),
+        onChanged: (value){
+          setState(() {
+
+          });
+        },
+      ),
+    );
+  }
+
+  //菜单项目
+  Widget _buildMenus(){
+    List<Widget> ws = [];
+    ws.add(const DividerWidget());
+    for(var menu in _menus){
+      ws.add(ListTile(
+        leading: Icon(menu.icon),
+        title: Text(menu.title!),
+        trailing: Text(menu.right ?? ""),
+        onTap: menu.onTap,
+      ));
+      ws.add(const DividerWidget());
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 100),
+      child: Column(
+        children: ws,
+      ),
+    );
   }
 
   //图片列表
@@ -317,33 +383,65 @@ class _PostEditPageState extends State<PostEditPage> {
 
   //主视图
   Widget _mainView() {
-    return Column(
-      children: [
-        //相册列表
-        if (_postType == PostType.image) _buildPhotosList(),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(pagePadding),
+        child: Column(
+          children: [
+            //内容输入
+            _buildContentInput(),
+            //相册列表
+            if (_postType == PostType.image) _buildPhotosList(),
 
-        //视频播放器
-        if (_postType == PostType.video)
-          VideoPlayerWidget(
-            initAsset: _selectedAssets.first,
-            onCompleted: (value) => _videoCompressFile = value,
-          ),
+            //视频播放器
+            if (_postType == PostType.video)
+              VideoPlayerWidget(
+                initAsset: _selectedAssets.first,
+                onCompleted: (value) => _videoCompressFile = value,
+              ),
 
-        //添加按钮
-        if (_postType == null && _selectedAssets.isEmpty)
-          Padding(
-            padding: const EdgeInsets.all(spacing),
-            child: _buildAddBtn(context, 100),
-          )
-      ],
+            //添加按钮
+            if (_postType == null && _selectedAssets.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(spacing),
+                child: _buildAddBtn(context, 100),
+              ),
+
+            _buildMenus()
+          ],
+        ),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('发布'),
+      // appBar: AppBar(
+      //   title: const Text('发布'),
+      // ),
+      appBar: AppBarWidget(
+        //左侧返回
+        leading: GestureDetector(
+          onTap: (){
+            Navigator.pop(context);
+          },
+          child: const Icon(
+            Icons.arrow_back_ios_new_outlined,
+            color: Colors.black38,
+          ),
+        ),
+        //右侧发布
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: pagePadding),
+            child: ElevatedButton(
+                onPressed: (){
+
+                },
+                child: const Text('发布')),
+          )
+        ],
       ),
       body: _mainView(),
       bottomSheet: _isDragNow ? _buildRemoveBar() : const SizedBox.shrink(),
