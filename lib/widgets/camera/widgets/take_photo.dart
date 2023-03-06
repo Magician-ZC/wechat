@@ -4,6 +4,8 @@ import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
+import '../../../utils/index.dart';
+
 //拍照片
 class TakePhotoPage extends StatefulWidget {
   const TakePhotoPage(this.cameraState,{super.key});
@@ -23,16 +25,22 @@ class _TakePhotoPageState extends State<TakePhotoPage> {
       if (event != null && event.status == MediaCaptureStatus.success) {
         String filePath = event.filePath;
         String fileTitle = filePath.split("/").last;
-        File file = File(filePath);
 
-        // 转换 AssetEntity
+        // 1 压缩图片
+        var newFile = await DuCompress.image(File(filePath));
+        if (newFile == null) {
+          return;
+        }
+
+        // 2 转换 AssetEntity
         final AssetEntity? asset = await PhotoManager.editor.saveImage(
-          file.readAsBytesSync(),
+          newFile.readAsBytesSync(),
           title: fileTitle,
         );
 
-        // 删除临时文件
-        await file.delete();
+        // 3 删除临时文件
+        await File(filePath).delete();
+        await newFile.delete();
 
         // ignore: use_build_context_synchronously
         Navigator.of(context).pop<AssetEntity?>(asset);

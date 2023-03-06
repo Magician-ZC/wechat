@@ -26,13 +26,13 @@ class _TakeVideoPageState extends State<TakeVideoPage> {
         String fileTitle = filePath.split("/").last;
         File file = File(filePath);
 
-        // 转换 AssetEntity
+        // 1 转换 AssetEntity
         final AssetEntity? asset = await PhotoManager.editor.saveVideo(
           file,
           title: fileTitle,
         );
 
-        // 删除临时文件
+        // 2 删除临时文件
         await file.delete();
 
         // ignore: use_build_context_synchronously

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:wechat/utils/config.dart';
 import 'package:wechat/utils/index.dart';
 import 'package:wechat/widgets/gallery.dart';
+import 'package:wechat/widgets/index.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
+
+enum PostType { image, video }
 
 class PostEditPage extends StatefulWidget {
   const PostEditPage({super.key});
@@ -12,6 +15,13 @@ class PostEditPage extends StatefulWidget {
 }
 
 class _PostEditPageState extends State<PostEditPage> {
+
+  // 发布类型
+  PostType? postType;
+
+  // 视频压缩文件
+  CompressMediaFile? videoCompressFile;
+
   //已选中图片数组
   List<AssetEntity> _selectedAssets = [];
 
@@ -63,20 +73,26 @@ class _PostEditPageState extends State<PostEditPage> {
        //    _selectedAssets = result;
        //  });
 
-        //拍摄照片
+       // 拍摄照片
        // var result = await DuPicker.takePhoto(context);
        // if (result == null) {
        //   return;
        // }
        // setState(() {
+       //   postType = PostType.image;
        //   _selectedAssets.add(result);
        // });
 
        //拍视频
-       var result = await DuPicker.takeVideo(context);
-       if (result == null) {
-         return;
-       }
+         var result = await DuPicker.takeVideo(context);
+         if (result == null) {
+           return;
+         }
+         setState(() {
+             postType = PostType.video;
+            _selectedAssets.clear();
+             _selectedAssets.add(result);
+         });
       },
       child: Container(
         color: Colors.black12,
@@ -271,8 +287,22 @@ class _PostEditPageState extends State<PostEditPage> {
   Widget _mainView() {
     return Column(
       children: [
-        //图片列表
-        _buildPhotosList(),
+        //相册列表
+        if(postType == PostType.image) _buildPhotosList(),
+
+        //视频播放器
+        if (postType == PostType.video)
+          VideoPlayerWidget(
+            initAsset: _selectedAssets.first,
+            onCompleted: (value) => videoCompressFile = value,
+          ),
+
+        //添加按钮
+        if(postType == null && _selectedAssets.isEmpty)
+          Padding(
+            padding: const EdgeInsets.all(spacing),
+            child: _buildAddBtn(context, 100),
+          )
       ],
     );
   }
