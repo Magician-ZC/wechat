@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'pages/index.dart';
 import 'pages/post.dart';
 
 void main() {
@@ -26,7 +27,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const PostEditPage(),
+      home: const TimeLinePage(),
     );
   }
 }

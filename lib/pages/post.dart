@@ -7,35 +7,48 @@ import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
 enum PostType { image, video }
 
+///发布界面
 class PostEditPage extends StatefulWidget {
-  const PostEditPage({super.key});
+  const PostEditPage({super.key, this.postType, this.selectedAssets});
+
+  // 发布类型
+  final PostType? postType;
+
+  //已选中图片数组
+  final List<AssetEntity>? selectedAssets;
 
   @override
   State<PostEditPage> createState() => _PostEditPageState();
 }
 
 class _PostEditPageState extends State<PostEditPage> {
-
   // 发布类型
-  PostType? postType;
+  PostType? _postType;
 
   // 视频压缩文件
-  CompressMediaFile? videoCompressFile;
+  CompressMediaFile? _videoCompressFile;
 
   //已选中图片数组
   List<AssetEntity> _selectedAssets = [];
 
   //是否开始拖拽
-  bool isDragNow = false;
+  bool _isDragNow = false;
 
   //是否将要删除
-  bool isWillRemove = false;
+  bool _isWillRemove = false;
 
   //是否将要排序
-  bool isWillOrder = false;
+  bool _isWillOrder = false;
 
   //被拖拽到的target id
-  String targetAssId = "";
+  String _targetAssId = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _postType = widget.postType;
+    _selectedAssets = widget.selectedAssets ?? [];
+  }
 
   //图片列表
   Widget _buildPhotosList() {
@@ -64,35 +77,54 @@ class _PostEditPageState extends State<PostEditPage> {
   Widget _buildAddBtn(BuildContext context, double width) {
     return GestureDetector(
       onTap: () async {
+        final result =await DuBottomSheet(selectAssets: _selectedAssets)
+            .wxPicker<List<AssetEntity>>(context);
+        if(result == null || result.isEmpty) return;
+
+        //视频
+        if(result.length == 1 && result.first.type == AssetType.video){
+          setState(() {
+            _postType =PostType.video;
+            _selectedAssets = result;
+          });
+        }
+        //图片
+        else{
+          setState(() {
+            _postType =PostType.image;
+            _selectedAssets = result;
+          });
+        }
+
         //相册
-       // var result = await DuPicker.assets(context: context);
-       //  if (result == null) {
-       //    return;
-       //  }
-       //  setState(() {
-       //    _selectedAssets = result;
-       //  });
+        // var result = await DuPicker.assets(context: context);
+        //  if (result == null) {
+        //    return;
+        //  }
+        //  setState(() {
+        //    _selectedAssets = result;
+        //  });
 
-       // 拍摄照片
-       // var result = await DuPicker.takePhoto(context);
-       // if (result == null) {
-       //   return;
-       // }
-       // setState(() {
-       //   postType = PostType.image;
-       //   _selectedAssets.add(result);
-       // });
+        // 拍摄照片
+        // var result = await DuPicker.takePhoto(context);
+        // if (result == null) {
+        //   return;
+        // }
+        // setState(() {
+        //   postType = PostType.image;
+        //   _selectedAssets.add(result);
+        // });
 
-       //拍视频
-         var result = await DuPicker.takeVideo(context);
-         if (result == null) {
-           return;
-         }
-         setState(() {
-             postType = PostType.video;
-            _selectedAssets.clear();
-             _selectedAssets.add(result);
-         });
+        //拍视频
+        //   var result = await DuPicker.takeVideo(context);
+        //   if (result == null) {
+        //     return;
+        //   }
+        //   setState(() {
+        //       _postType = PostType.video;
+        //      _selectedAssets.clear();
+        //       _selectedAssets.add(result);
+        //   });
       },
       child: Container(
         color: Colors.black12,
@@ -115,14 +147,14 @@ class _PostEditPageState extends State<PostEditPage> {
       //当拖动对象开始被拖动时调用
       onDragStarted: () {
         setState(() {
-          isDragNow = true;
+          _isDragNow = true;
         });
       },
       //当拖动对象被放下时调用
       onDragEnd: (details) {
         setState(() {
-          isDragNow = false;
-          isWillOrder = false;
+          _isDragNow = false;
+          _isWillOrder = false;
         });
       },
       //当draggable被放置在DragTarget接收时调用
@@ -130,8 +162,8 @@ class _PostEditPageState extends State<PostEditPage> {
       //当draggable被放置但未被DragTarget接收时调用
       onDraggableCanceled: (velocity, offset) {
         setState(() {
-          isDragNow = false;
-          isWillOrder = false;
+          _isDragNow = false;
+          _isWillOrder = false;
         });
       },
       //拖动进行时显示在指针下放的小部件
@@ -172,12 +204,12 @@ class _PostEditPageState extends State<PostEditPage> {
             },
             child: Container(
               clipBehavior: Clip.antiAlias,
-              padding: (isWillOrder && targetAssId == asset.id)
+              padding: (_isWillOrder && _targetAssId == asset.id)
                   ? EdgeInsets.zero
                   : const EdgeInsets.all(imagePadding),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(3),
-                border: (isWillOrder && targetAssId == asset.id)
+                border: (_isWillOrder && _targetAssId == asset.id)
                     ? Border.all(color: accentColor, width: imagePadding)
                     : null,
               ),
@@ -197,8 +229,8 @@ class _PostEditPageState extends State<PostEditPage> {
             return false;
           }
           setState(() {
-            isWillOrder = true;
-            targetAssId = asset.id;
+            _isWillOrder = true;
+            _targetAssId = asset.id;
           });
           return true;
         },
@@ -216,14 +248,14 @@ class _PostEditPageState extends State<PostEditPage> {
           // 2 插入到目标前面
           _selectedAssets.insert(targetIndex, data);
           setState(() {
-            isWillOrder = false;
-            targetAssId = "";
+            _isWillOrder = false;
+            _targetAssId = "";
           });
         },
         onLeave: (data) {
           setState(() {
-            isWillOrder = false;
-            targetAssId = "";
+            _isWillOrder = false;
+            _targetAssId = "";
           });
         },
       ),
@@ -239,7 +271,7 @@ class _PostEditPageState extends State<PostEditPage> {
           width: double.infinity,
           child: Container(
             height: 120,
-            color: isWillRemove ? Colors.red[300] : Colors.red[200],
+            color: _isWillRemove ? Colors.red[300] : Colors.red[200],
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -247,13 +279,13 @@ class _PostEditPageState extends State<PostEditPage> {
                 Icon(
                   Icons.delete,
                   size: 32,
-                  color: isWillRemove ? Colors.white : Colors.white70,
+                  color: _isWillRemove ? Colors.white : Colors.white70,
                 ),
                 //文字
                 Text(
                   '拖拽到这里删除',
                   style: TextStyle(
-                    color: isWillRemove ? Colors.white : Colors.white70,
+                    color: _isWillRemove ? Colors.white : Colors.white70,
                   ),
                 )
               ],
@@ -263,7 +295,7 @@ class _PostEditPageState extends State<PostEditPage> {
       },
       onWillAccept: (data) {
         setState(() {
-          isWillRemove = true;
+          _isWillRemove = true;
         });
         return true;
       },
@@ -271,13 +303,13 @@ class _PostEditPageState extends State<PostEditPage> {
       onAccept: (data) {
         setState(() {
           _selectedAssets.remove(data);
-          isWillRemove = false;
+          _isWillRemove = false;
         });
       },
 
       onLeave: (data) {
         setState(() {
-          isWillRemove = false;
+          _isWillRemove = false;
         });
       },
     );
@@ -288,17 +320,17 @@ class _PostEditPageState extends State<PostEditPage> {
     return Column(
       children: [
         //相册列表
-        if(postType == PostType.image) _buildPhotosList(),
+        if (_postType == PostType.image) _buildPhotosList(),
 
         //视频播放器
-        if (postType == PostType.video)
+        if (_postType == PostType.video)
           VideoPlayerWidget(
             initAsset: _selectedAssets.first,
-            onCompleted: (value) => videoCompressFile = value,
+            onCompleted: (value) => _videoCompressFile = value,
           ),
 
         //添加按钮
-        if(postType == null && _selectedAssets.isEmpty)
+        if (_postType == null && _selectedAssets.isEmpty)
           Padding(
             padding: const EdgeInsets.all(spacing),
             child: _buildAddBtn(context, 100),
@@ -314,7 +346,7 @@ class _PostEditPageState extends State<PostEditPage> {
         title: const Text('发布'),
       ),
       body: _mainView(),
-      bottomSheet: isDragNow ? _buildRemoveBar() : const SizedBox.shrink(),
+      bottomSheet: _isDragNow ? _buildRemoveBar() : const SizedBox.shrink(),
     );
   }
 }

@@ -1,12 +1,29 @@
 
-//选取器
 import 'package:camerawesome/camerawesome_plugin.dart';
 import 'package:flutter/material.dart';
 import 'package:wechat/utils/config.dart';
 import 'package:wechat/widgets/camera/camera.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
-
+//选取器
 class DuPicker{
+
+  //底部弹出视图
+  static Future<T?> showModalSheet<T>(BuildContext context,{Widget? child}) {
+    return showModalBottomSheet<T>(
+        context: context,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(10)
+            )
+        ),
+        builder: (context) {
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 15),
+            child: child,
+          );
+        });
+  }
 
   //相册
   static Future<List<AssetEntity>?> assets({
