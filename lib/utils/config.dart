@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+//api url
+const String apiBaseUrl = "https://mock.apifox.cn/m1/2952203-0-default";
 
 //间距
 const double spacing = 10.0;

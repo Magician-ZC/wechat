@@ -1,7 +1,9 @@
 library utils;
 
+export 'bottom_sheet.dart';
+export 'compress.dart';
 export 'config.dart';
 export 'picker.dart';
-export 'compress.dart';
 export 'toast.dart';
-export 'bottom_sheet.dart';
+export 'tools.dart';
+export 'wx_http.dart';
