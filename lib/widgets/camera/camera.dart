@@ -7,14 +7,14 @@ import 'widgets/take_photo.dart';
 import 'widgets/take_video.dart';
 
 class CameraPage extends StatelessWidget {
-  const CameraPage({super.key, this.captureMode = CaptureMode.photo, this.maxVideoDuration});
+  const CameraPage(
+      {super.key, this.captureMode = CaptureMode.photo, this.maxVideoDuration});
 
   /// 拍照、拍视频
   final CaptureMode captureMode;
 
   /// 视频最大时长 秒
   final Duration? maxVideoDuration;
-
 
   // 生成文件路径
   Future<String> _buildFilePath() async {
@@ -57,7 +57,7 @@ class CameraPage extends StatelessWidget {
         },
         // 生成规则
         imageAnalysisConfig: AnalysisConfig(
-          outputFormat: InputAnalysisImageFormat.jpeg, // 图像格式
+          cupertinoOptions: CupertinoAnalysisOptions.bgra8888(), // 图像格式
         ),
         // 经纬度, 墙
         // exifPreferences: ExifPreferences(
