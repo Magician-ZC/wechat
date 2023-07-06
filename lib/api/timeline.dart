@@ -12,4 +12,10 @@ class TimelineApi {
     }
     return items;
   }
+
+  ///点赞
+  static Future like(String id) async {
+    var res = await WxHttpUtil().post('/timeline/$id/like', data: {});
+    return res;
+  }
 }

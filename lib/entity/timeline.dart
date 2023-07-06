@@ -10,17 +10,18 @@ class TimelineModel {
   UserModel? user;
   String? publishDate;
   String? location;
+  bool? isLike;
 
-  TimelineModel({
-    this.id,
-    this.images,
-    this.video,
-    this.content,
-    this.postType,
-    this.user,
-    this.publishDate,
-    this.location,
-  });
+  TimelineModel(
+      {this.id,
+      this.images,
+      this.video,
+      this.content,
+      this.postType,
+      this.user,
+      this.publishDate,
+      this.location,
+      this.isLike});
 
   factory TimelineModel.fromJson(Map<String, dynamic> json) => TimelineModel(
         id: json['id'] as String?,
@@ -35,6 +36,7 @@ class TimelineModel {
             : UserModel.fromJson(json['user'] as Map<String, dynamic>),
         publishDate: json['publishDate'] as String?,
         location: json['location'] as String?,
+        isLike: json['isLike'] as bool?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -46,5 +48,6 @@ class TimelineModel {
         'user': user?.toJson(),
         'publishDate': publishDate,
         'location': location,
+        'isLike': isLike,
       };
 }

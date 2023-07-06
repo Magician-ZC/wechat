@@ -4,6 +4,7 @@ import 'package:wechat/entity/index.dart';
 import 'package:wechat/pages/index.dart';
 import 'package:wechat/utils/index.dart';
 import 'package:wechat/widgets/index.dart';
+import 'package:wechat/widgets/text.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
 import '../styles/index.dart';
@@ -39,6 +40,9 @@ class _TimeLinePageState extends State<TimeLinePage>
   //动画tween
   late Animation<double> _sizeTween;
 
+  //当前操作的item
+  TimelineModel? _currentItem;
+
   //导入数据
   Future _loadData() async {
     var result = await TimelineApi.pageList();
@@ -60,6 +64,25 @@ class _TimeLinePageState extends State<TimeLinePage>
   @override
   void initState() {
     super.initState();
+
+    //监听滑动
+    _scrollController.addListener(() {
+      //滚动条超过200时，开始渐变
+      if (_scrollController.position.pixels > 200) {
+        //透明度系数
+        double opacity = (_scrollController.position.pixels - 200) / 100;
+        if (opacity < 0.85) {
+          setState(() {
+            _appBarColor = Colors.black.withOpacity(opacity);
+          });
+        }
+      } else {
+        setState(() {
+          _appBarColor = null;
+        });
+      }
+    });
+
     //初始化overlay
     _overlayState = Overlay.of(context);
 
@@ -99,7 +122,7 @@ class _TimeLinePageState extends State<TimeLinePage>
   }
 
   //是否喜欢菜单
-  Widget _buildIsLikeMenu() {
+  Widget _buildIsLikeMenu(TimelineModel? item) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.black87,
@@ -114,14 +137,17 @@ class _TimeLinePageState extends State<TimeLinePage>
             //喜欢
             if (constraints.maxWidth > 80)
               TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(
+                  onPressed: () {
+                    _onLike();
+                  },
+                  icon: Icon(
                     Icons.favorite,
-                    color: Colors.redAccent,
+                    color:
+                        item?.isLike == true ? Colors.redAccent : Colors.white,
                     size: 16,
                   ),
                   label: Text(
-                    '喜欢',
+                    item?.isLike == true ? '取消' : '喜欢',
                     style: textStylePopMenu.copyWith(),
                   )),
             //评论
@@ -245,14 +271,7 @@ class _TimeLinePageState extends State<TimeLinePage>
                 ),
                 const SpaceVerticalWidget(),
                 //正文
-                Text(
-                  item.content ?? "",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black54,
-                  ),
-                ),
+                TextMaxLinesWidget(content: item.content ?? ""),
                 const SpaceVerticalWidget(),
                 //9宫格图片列表
                 LayoutBuilder(builder:
@@ -308,6 +327,7 @@ class _TimeLinePageState extends State<TimeLinePage>
                         var offset = _getBtnOffset(btnKey);
                         setState(() {
                           _btnOffset = offset;
+                          _currentItem = item;
                         });
                         //显示遮罩层
                         _onShowMenu(onTap: _onCloseMenu);
@@ -383,9 +403,7 @@ class _TimeLinePageState extends State<TimeLinePage>
         child: GestureDetector(
           onTap: onTap,
           child: Stack(children: [
-            AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                color: Colors.black.withOpacity(0.4)),
+            AnimatedContainer(duration: const Duration(milliseconds: 300)),
             //菜单
             AnimatedBuilder(
                 animation: _animationController,
@@ -396,7 +414,7 @@ class _TimeLinePageState extends State<TimeLinePage>
                       child: SizedBox(
                           width: _sizeTween.value,
                           height: 40,
-                          child: _buildIsLikeMenu()));
+                          child: _buildIsLikeMenu(_currentItem)));
                 })
           ]),
         ),
@@ -421,12 +439,31 @@ class _TimeLinePageState extends State<TimeLinePage>
     }
   }
 
+  //点赞操作
+  void _onLike() {
+    //安全检查
+    if (_currentItem == null) {
+      return;
+    }
+    //设置状态
+    setState(() {
+      _currentItem?.isLike = !(_currentItem?.isLike ?? false);
+    });
+
+    //关闭菜单
+    _onCloseMenu();
+
+    //执行请求
+    TimelineApi.like(_currentItem!.id!);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         //如果设置了extendBodyBehindAppBar为true，那么appbar将会覆盖在body上面
         extendBodyBehindAppBar: true,
         appBar: AppBarWidget(
+          backgroundColor: _appBarColor,
           actions: [
             //拍照
             GestureDetector(

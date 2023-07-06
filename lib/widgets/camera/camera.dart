@@ -57,7 +57,8 @@ class CameraPage extends StatelessWidget {
         },
         // 生成规则
         imageAnalysisConfig: AnalysisConfig(
-          cupertinoOptions: CupertinoAnalysisOptions.bgra8888(), // 图像格式
+          //   cupertinoOptions: CupertinoAnalysisOptions.bgra8888(), // 图像格式
+          outputFormat: InputAnalysisImageFormat.jpeg, // 图像格式
         ),
         // 经纬度, 墙
         // exifPreferences: ExifPreferences(
