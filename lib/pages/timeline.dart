@@ -43,6 +43,19 @@ class _TimeLinePageState extends State<TimeLinePage>
   //当前操作的item
   TimelineModel? _currentItem;
 
+  //是否显示评论输入框
+  bool _isShowInput = false;
+  //是否展开表情列表
+  bool _isShowEmoji = false;
+  //是否输入内容
+  bool _isInputWords = false;
+  //评论输入框
+  final TextEditingController _commentController = TextEditingController();
+  //输入框焦点
+  final FocusNode _focusNode = FocusNode();
+  //键盘高度
+  final double _keyboardHeight = 200;
+
   //导入数据
   Future _loadData() async {
     var result = await TimelineApi.pageList();
@@ -99,6 +112,14 @@ class _TimeLinePageState extends State<TimeLinePage>
         curve: Curves.easeInOut,
       ),
     );
+
+    //监控输入
+    _commentController.addListener(() {
+      setState(() {
+        _isInputWords = _commentController.text.isNotEmpty;
+      });
+    });
+
     //设置用户资料
     _user = UserModel(
         nickname: "聆听风雨",
@@ -118,7 +139,113 @@ class _TimeLinePageState extends State<TimeLinePage>
   void dispose() {
     _animationController.dispose();
     _scrollController.dispose();
+    _commentController.dispose();
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  //点赞列表
+  Widget _buildLikeList(TimelineModel item) {
+    return Container(
+      padding: const EdgeInsets.all(spacing),
+      color: Colors.grey[100],
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        //图标
+        const Padding(
+          padding: EdgeInsets.only(top: spacing),
+          child: Icon(
+            Icons.favorite_border_outlined,
+            size: 20,
+            color: Colors.black54,
+          ),
+        ),
+        const SpaceHorizontalWidget(),
+        //点赞列表
+        Expanded(
+            child: Wrap(spacing: 5, runSpacing: 5, children: [
+          for (LikeModel item in item.likes ?? [])
+            Image.network(
+              item.avator ?? '',
+              width: 32,
+              height: 32,
+              fit: BoxFit.cover,
+            )
+        ]))
+      ]),
+    );
+  }
+
+  //评论列表
+  _buildCommentList(TimelineModel item) {
+    return Container(
+        padding: const EdgeInsets.all(spacing),
+        color: Colors.grey[100],
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            //图标
+            const Padding(
+              padding: EdgeInsets.only(top: spacing),
+              child: Icon(
+                Icons.chat_bubble_outline,
+                size: 20,
+                color: Colors.black54,
+              ),
+            ),
+            const SpaceHorizontalWidget(),
+
+            //右侧评论区
+            Expanded(
+                child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (CommentModel comment in item.comments ?? [])
+                  //评论项目
+                  Row(
+                    children: [
+                      //头像
+                      Image.network(
+                        comment.user?.avator ?? '',
+                        width: 32,
+                        height: 32,
+                        fit: BoxFit.cover,
+                      ),
+                      const SpaceHorizontalWidget(),
+
+                      //昵称、时间、内容
+                      Expanded(
+                          child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          //行 1 昵称 时间
+                          Row(children: [
+                            //昵称
+                            Text(
+                              comment.user?.nickname ?? '',
+                              style: textStyleComment,
+                            ),
+                            const Spacer(),
+                            //时间
+                            Text(
+                              DuTools.dateTimeFormat(comment.publishDate ?? ""),
+                              style: textStyleComment,
+                            )
+                          ]),
+                          //行 2 内容
+                          Text(
+                            comment.content ?? '',
+                            style: textStyleComment,
+                          )
+                        ],
+                      ))
+                    ],
+                  )
+              ],
+            ))
+          ],
+        ));
   }
 
   //是否喜欢菜单
@@ -240,6 +367,21 @@ class _TimeLinePageState extends State<TimeLinePage>
 
   ///列表项
   Widget _buildListItem(TimelineModel item) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        //正文
+        _buildContent(item),
+        //点赞列表
+        _buildLikeList(item),
+        //评论列表
+        _buildCommentList(item),
+      ],
+    );
+  }
+
+  ///正文、图片、视频
+  Padding _buildContent(TimelineModel item) {
     int imgCount = item.images?.length ?? 0;
     GlobalKey btnKey = GlobalKey();
     return Padding(

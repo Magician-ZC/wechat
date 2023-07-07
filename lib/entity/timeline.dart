@@ -11,6 +11,8 @@ class TimelineModel {
   String? publishDate;
   String? location;
   bool? isLike;
+  List<LikeModel>? likes;
+  List<CommentModel>? comments;
 
   TimelineModel(
       {this.id,
@@ -21,7 +23,9 @@ class TimelineModel {
       this.user,
       this.publishDate,
       this.location,
-      this.isLike});
+      this.isLike,
+      this.likes,
+      this.comments});
 
   factory TimelineModel.fromJson(Map<String, dynamic> json) => TimelineModel(
         id: json['id'] as String?,
@@ -37,6 +41,12 @@ class TimelineModel {
         publishDate: json['publishDate'] as String?,
         location: json['location'] as String?,
         isLike: json['isLike'] as bool?,
+        likes: (json['likes'] as List<dynamic>?)
+            ?.map((e) => LikeModel.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        comments: (json['comments'] as List<dynamic>?)
+            ?.map((e) => CommentModel.fromJson(e as Map<String, dynamic>))
+            .toList(),
       );
 
   Map<String, dynamic> toJson() => {
@@ -49,5 +59,7 @@ class TimelineModel {
         'publishDate': publishDate,
         'location': location,
         'isLike': isLike,
+        'likes': likes?.map((e) => e.toJson()).toList(),
+        'comments': comments?.map((e) => e.toJson()).toList(),
       };
 }

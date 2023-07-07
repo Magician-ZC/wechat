@@ -18,4 +18,11 @@ class TimelineApi {
     var res = await WxHttpUtil().post('/timeline/$id/like', data: {});
     return res;
   }
+
+  ///评论
+  static Future comment(String id, String content) async {
+    var res = await WxHttpUtil()
+        .post('/timeline/$id/comment', data: {'content': content});
+    return res;
+  }
 }

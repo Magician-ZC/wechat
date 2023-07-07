@@ -6,3 +6,10 @@ var textStylePopMenu = const TextStyle(
   fontSize: 14,
   fontWeight: FontWeight.w500,
 );
+
+///评论样式
+var textStyleComment = const TextStyle(
+  color: Colors.black54,
+  fontSize: 14,
+  fontWeight: FontWeight.w500,
+);
